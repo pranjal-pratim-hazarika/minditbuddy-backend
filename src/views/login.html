@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Chaisahyog</title>
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+    <link href="https://fonts.googleapis.com/css?family=Baloo+Thambi+2&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="form.css">
+
+</head>
+
+<body>
+
+  <div class="pen-title">
+         <h1> Chaisahyog <i class="fab fa-envira" style="opacity: 0.65;transform: rotateY(180deg);color: rgb(26, 117, 67);"></i></h1>
+  </div>
+  <!-- <button id="btnFetch">Send Token</button> -->
+  <div class="container">
+    
+    <div class="card">
+      <h1 class="title">Login <i id="lock" class="fas fa-lock" style="float: right;margin-right:1em;font-size:0.8em;"></i> </h1>
+      <form> 
+        <div class="input-container">
+          <input type="text" id="username" required="required"/>
+          <label for="">Username</label>
+          <div class="bar"></div>
+        </div>
+        <div class="input-container">
+          <input type="password" id="password" required="required"/>
+          <label for="">Password</label>
+          <div class="bar"></div>
+        </div>
+      </form>
+
+      <div class="button-container">
+          <button id="loginUser"><span>Go <i id="go" class="fas fa-caret-right"></i></span></button>
+      </div>
+
+    </div>
+
+  </div>
+
+<!-- ----------------------------------------------------------------- -->
+<script>
+    
+    
+    document.getElementById("loginUser").addEventListener("click", function() {
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "http://127.0.0.1:3000/api/v1/login/", true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    
+    xhr.onreadystatechange = function() {
+         if (this.readyState == 4 && this.status == 200) {
+         console.log(xhr.responseText);
+        //  ----------Send Token---------------
+          var test = JSON.parse(xhr.responseText);
+          var token = test.token;
+          console.log(token);
+        //  -----------------------------------
+       }
+     }
+    var uName = document.getElementById("username").value;
+    var uPass = document.getElementById("password").value;
+    data = JSON.stringify({
+             username: `${uName}`,
+             password: `${uPass}`
+            });
+          xhr.send(data);
+        },
+        false
+    );
+     
+  </script>
+<!-- --------------------------------------------------------------- -->
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+  $(document).ready(function(){
+                $('.button-container').hover(function(e){
+                     $("#lock").toggleClass("fa-unlock");
+                    // e.stopPropagation();
+                    // e.preventDefault();
+                })
+            })
+</script>
+
+</body>
+</html>
