@@ -29,11 +29,11 @@ function start() {
   //for root
   app.get("/", authController.root);
   //for login
-  app.post(route + "/login/", authController.login);
+  app.post(route + "/login", authController.login);
   //for signup
-  app.post(route + "/signup/", authController.signup);
+  app.post(route + "/signup", authController.signup);
   //for home
-  app.get(route + "/home/", middleware.checkToken, authController.home);
+  app.get(route + "/home", middleware.checkToken, authController.home);
 }
   
 start();
