@@ -1,5 +1,5 @@
 body {
-    background: #e9e9e9;
+    background: #6e757a;
     color: #666666;
     font-family: 'RobotoDraft', 'Roboto', sans-serif;
     font-size: 14px;
@@ -17,9 +17,10 @@ body {
   }
   .pen-title h1 {
     margin: 0 0 20px;
-    font-size: 48px;
+    font-size: 4rem;
     font-weight: 300;
     font-family: 'Baloo Thambi 2', cursive;
+    color: #f1f1f1;
   }
   /* .pen-title span {
     font-size: 12px;
@@ -58,16 +59,17 @@ body {
     box-sizing: border-box;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
     -webkit-transition: .3s ease;
+    -moz-transition: .3s ease;
     transition: .3s ease;
   }
  
   .card .title {
     position: relative;
     z-index: 1;
-    border-left: 5px solid rgb(33, 131, 77);
+    border-left: 5px solid rgb(48, 110, 180);
     margin: 0 0 35px;
     padding: 10px 0 10px 50px;
-    color: rgb(33, 131, 77);
+    color: rgb(75, 134, 201);
     font-size: 32px;
     font-weight: 600;
     text-transform: uppercase;
@@ -90,7 +92,7 @@ body {
   }
   .card .input-container input:focus ~ label {
     color: #9d9d9d;
-    -webkit-transform: translate(-12%, -50%) scale(0.75);
+    transform: translate(-12%, -50%) scale(0.75);
             transform: translate(-12%, -50%) scale(0.75);
   }
   .card .input-container input:focus ~ .bar:before, .card .input-container input:focus ~ .bar:after {
@@ -98,7 +100,7 @@ body {
   }
   .card .input-container input:valid ~ label {
     color: #9d9d9d;
-    -webkit-transform: translate(-12%, -50%) scale(0.75);
+    transform: translate(-12%, -50%) scale(0.75);
             transform: translate(-12%, -50%) scale(0.75);
   }
   .card .input-container label {
@@ -109,7 +111,7 @@ body {
     font-size: 24px;
     font-weight: 300;
     line-height: 60px;
-    -webkit-transition: 0.2s ease;
+    transition: 0.2s ease;
     transition: 0.2s ease;
     font-family: 'Baloo Thambi 2', cursive;
   }
@@ -124,10 +126,10 @@ body {
   .card .input-container .bar:before, .card .input-container .bar:after {
     content: '';
     position: absolute;
-    background: rgb(33, 131, 77);
+    background: rgb(51, 106, 168);
     width: 0;
     height: 2px;
-    -webkit-transition: .2s ease;
+    transition: .2s ease;
     transition: .2s ease;
   }
   .card .input-container .bar:before {
@@ -154,14 +156,13 @@ body {
     line-height: 1;
     text-transform: uppercase;
     overflow: hidden;
-    -webkit-transition: .3s ease;
+    transition: .3s ease;
     transition: .3s ease;
   }
   .card .button-container button span {
     position: relative;
     z-index: 1;
     color: #ddd;
-    -webkit-transition: .3s ease;
     transition: .3s ease;
   }
   .card .button-container button:before {
@@ -170,7 +171,7 @@ body {
     top: 50%;
     left: 50%;
     display: block;
-    background: #328557f8;
+    background: rgb(51, 106, 168);
     width: 30px;
     height: 30px;
     border-radius: 100%;
@@ -180,10 +181,10 @@ body {
     transition: .3s ease;
   }
   .card .button-container button:hover, .card .button-container button:active, .card .button-container button:focus {
-    border-color: rgb(33, 131, 77);
+    border-color: rgb(51, 106, 168);
   }
   .card .button-container button:hover span, .card .button-container button:active span, .card .button-container button:focus span {
-    color: rgb(33, 131, 77);
+    color: rgb(51, 106, 168);
   }
   .card .button-container button:active span, .card .button-container button:focus span {
     color: #ffffff;
@@ -211,7 +212,7 @@ body {
   }
   
   /* Keyframes */
-  @-webkit-keyframes buttonFadeInUp {
+  @keyframes buttonFadeInUp {
     0% {
       bottom: 30px;
       opacity: 0;
@@ -240,10 +241,19 @@ body {
   }
 
   .fa-unlock{
-    animation: change 0.5s linear infinite alternate-reverse;
+    /* animation: change 1.5s linear infinite alternate-reverse; */
+    color: rgba(99, 96, 96, 0.733);
   }
-  @keyframes change{
+  /* @keyframes change{
     to{
       color: rgba(99, 96, 96, 0.733);
     }
+  } */
+
+  #test{
+    text-align: center;
+    margin-top: 4vh;
+    font-family: nunito;
+    color: #696969;
   }
+ 

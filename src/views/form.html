@@ -8,6 +8,7 @@
     <title>Chaisahyog</title>
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito&display=swap"rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css?family=Baloo+Thambi+2&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="form.css">
@@ -17,9 +18,9 @@
 <body>
 
   <div class="pen-title">
-         <h1> Chaisahyog <i class="fab fa-envira" style="opacity: 0.65;transform: rotateY(180deg);color: rgb(26, 117, 67);"></i></h1>
+         <h1> Calm <i class="fas fa-bong" style="color:rgb(76, 81, 85)" ></i> It </h1>
   </div>
-  <!-- <button id="btnFetch">Send Token</button> -->
+  
   <div class="container">
     
     <div class="card">
@@ -27,12 +28,12 @@
       <form> 
         <div class="input-container">
           <input type="text" id="username" required="required"/>
-          <label for="">Username</label>
+          <label id="xxx">Username</label>
           <div class="bar"></div>
         </div>
         <div class="input-container">
           <input type="password" id="password" required="required"/>
-          <label for="">Password</label>
+          <label>Password</label>
           <div class="bar"></div>
         </div>
       </form>
@@ -41,6 +42,8 @@
           <button id="loginUser"><span>Go <i id="go" class="fas fa-caret-right"></i></span></button>
       </div>
 
+      <div id="test"></div>
+
     </div>
 
   </div>
@@ -48,21 +51,42 @@
 <!-- ----------------------------------------------------------------- -->
 <script>
     
-    
     document.getElementById("loginUser").addEventListener("click", function() {
 
+      //  if(document.getElementById("username").value == "") {
+      //    document.getElementById("xxx").style.color = "red";
+      //  }
+
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", "http://127.0.0.1:3000/api/v1/login/", true);
+    xhr.open("POST", "http://00251c5a.ngrok.io/chaisahyog/api/v1/login/", true);
     xhr.setRequestHeader("Content-Type", "application/json");
     
     xhr.onreadystatechange = function() {
          if (this.readyState == 4 && this.status == 200) {
          console.log(xhr.responseText);
-        //  ----------Send Token---------------
-          var test = JSON.parse(xhr.responseText);
-          var token = test.token;
+        //  ----------Re-directing---------------
+          var resToken = JSON.parse(xhr.responseText);
+          var token = resToken.token;
           console.log(token);
-        //  -----------------------------------
+          // ------------Token Stored in Session Storage-----
+          sessionStorage.setItem('myUniqueUserToken',
+            JSON.stringify(`${token}`)
+          );
+          // ------------------End Storing-------------------
+
+          if(token != "") {
+            document.location.href = "factory_details.html";
+          }
+        //  -------------End Directing------------
+       }
+       else if(this.status == 400) {
+         document.getElementById("test").innerHTML = '<i class="fas fa-user-lock"></i> Username/Password Not Provided';
+       }
+       else if(this.status == 401) {
+         document.getElementById("test").innerHTML = '<i class="fas fa-key"></i> Password is Not Valid';
+       }
+       else if(this.status == 404) {
+         document.getElementById("test").innerHTML = '<i class="fas fa-user-circle"></i> User Not Found';
        }
      }
     var uName = document.getElementById("username").value;

@@ -1,6 +1,8 @@
 require("dotenv").config({ path: "../config/.env" });
-const jwt = require("jsonwebtoken");
+
 const secret = process.env.SECRET_KEY;
+
+const jwt = require("jsonwebtoken");
 
 const checkToken = (req, res, next) => {
   let token = req.headers["x-access-token"] || req.headers["authorization"];
