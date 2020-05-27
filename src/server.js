@@ -13,27 +13,27 @@ const middleware = require("./middleware/middleware.js");
 const authController = require("./controller/authController.js");
 
 function start() {
-    app.use(
-      bodyParser.urlencoded({
-        extended: false
-      })
-    );
-    app.use(bodyParser.json());
-    app.use(cors());
+  app.use(
+    bodyParser.urlencoded({
+      extended: false
+    })
+  );
+  app.use(bodyParser.json());
+  app.use(cors());
 
-    app.listen(port, ip, function() {
-      console.log("Server running...");
-    });
+  app.listen(port, ip, function() {
+    console.log("Server running...");
+  });
   
-    //-------------ROUTES------------------//
-    //for root
-    app.get("/", authController.root);
-    //for login
-    app.post(route + "/login/", authController.login);
-    //for signup
-    app.post(route + "/signup/", authController.signup);
-    //for home
-    app.get(route + "/home/", middleware.checkToken, authController.home);
+  //-------------ROUTES------------------//
+  //for root
+  app.get("/", authController.root);
+  //for login
+  app.post(route + "/login/", authController.login);
+  //for signup
+  app.post(route + "/signup/", authController.signup);
+  //for home
+  app.get(route + "/home/", middleware.checkToken, authController.home);
 }
   
 start();

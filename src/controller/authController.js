@@ -33,7 +33,7 @@ const login = (req, res) => {
   if (email && password) {
     let userRef = db.collection("users").doc(email);
     let getDoc = userRef.get()
-   .then(doc => {
+    .then(doc => {
       if(doc.exists){
         //user exists
         let hashedPassword = doc.data().password;
@@ -52,16 +52,16 @@ const login = (req, res) => {
              message: "Authentication Successful",
              token: token
           });
-         } else {
+        } else {
           // Passwords don't match
           res.set({
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*"
           });
           res.sendStatus(401);
-         }            
+        }            
       }else{
-       //user doesnot exist
+        //user doesnot exist
         res.set({
          "Content-Type": "application/json",
          "Access-Control-Allow-Origin": "*"
@@ -88,69 +88,77 @@ const login = (req, res) => {
 
 //for signup
 const signup = (req, res) => {
-let name = req.body.name;
-let email = req.body.email;
-let password = req.body.password;
+  let name = req.body.name;
+  let email = req.body.email;
+  let password = req.body.password;
+  let user_type = req.body.user_type;
 
-if (name && email && password) {
-  let userRef = db.collection("users").doc(email);
-  let getDoc = userRef.get()
-  .then(doc => {
-    if(!doc.exists){
-      //no user found i.e, user can be created
-      let saltRounds = 10;
-      let hashedPassword = bcrypt.hashSync(password, saltRounds);
-      //forming data
-      let data = {
-        name: name,
-        email: email,
-        password: hashedPassword,
-        user_type: 'client',
-        account_created_at: admin.firestore.Timestamp.now(),
-        status: 'active',
-        account_updated_at: '',
-        recent_login: ''
-      };
-      //inserting data into firestore
-      let setDoc = userRef.set(data);
-  res.set({
+  if (name && email && password) {
+    let userRef = db.collection("users").doc(email);
+    let getDoc = userRef.get()
+    .then(doc => {
+      if(!doc.exists){
+        //no user found i.e, user can be created
+        let saltRounds = 10;
+        let hashedPassword = bcrypt.hashSync(password, saltRounds);
+        //forming data
+        let data = {
+          name: name,
+          email: email,
+          password: hashedPassword,
+          user_type: user_type,
+          account_created_at: admin.firestore.Timestamp.now(),
+          status: 'active',
+          account_updated_at: '',
+          recent_login: ''
+        };
+        //extra details for professional
+        if(user_type == 'professional'){
+          data['occupation'] = req.body.occupation;
+          data['purpose'] = req.body.purpose;
+          data['qualification'] = req.body.qualification;
+        }
+
+        //inserting data into firestore
+        let setDoc = userRef.set(data);
+        res.set({
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*"
-      });
-      res.sendStatus(201);
-    }else{
-      //user already exists
+        });
+        res.sendStatus(201);
+      }else{
+        //user already exists
+        res.set({
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*"
+        });
+        res.sendStatus(409);
+      }
+    }).catch(err => {
+      //error getting user
       res.set({
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*"
       });
-      res.sendStatus(409);
-    }
-  }).catch(err => {
-    //error getting user
+      res.sendStatus(500);
+    })
+  } else {
+    //name, email or password not provided
     res.set({
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*"
     });
-    res.sendStatus(500);
-  })
-} else {
-  //name, email or password not provided
-  res.set({
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*"
-  });
-  res.sendStatus(400);
-}
+    res.sendStatus(400);
+  }
 }
 
 //for home
 const home = (req, res) => {
-res.set({
-  "Content-Type": "application/json",
-  "Access-Control-Allow-Origin": "*"
-});
-res.send('{ "msg":"valid token. access to resources granted"}');
+  res.set({
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*"
+  });
+  res.send('{ "msg":"valid token. access to resources granted"}');
 }
 
 module.exports = {
