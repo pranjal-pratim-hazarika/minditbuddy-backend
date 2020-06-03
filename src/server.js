@@ -26,12 +26,13 @@ function start() {
   });
   
   //-------------ROUTES------------------//
-  //for root
-  app.get("/", authController.root);
+
   //for login
   app.post(route + "/login", authController.login);
   //for signup
   app.post(route + "/signup", authController.signup);
+  //for email verification
+  app.get(route + "/verify", authController.verifyEmail);
   //for home
   app.get(route + "/home", middleware.checkToken, authController.home);
 }
