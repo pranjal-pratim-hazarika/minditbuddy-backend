@@ -274,7 +274,7 @@ const verifyEmail = (req, res) => {
 
 //for client dashboard
 const clientDashboard = (req, res) => {
-  let email = req.body.email;
+  let email = req.query.email;
   let userRef = db.collection("users").doc(email);
   let getDoc = userRef.get()
   .then(doc => {
