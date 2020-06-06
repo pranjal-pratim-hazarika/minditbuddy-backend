@@ -33,8 +33,8 @@ function start() {
   app.post(route + "/signup", authController.signup);
   //for email verification
   app.get(route + "/verify", authController.verifyEmail);
-  //for home
-  app.get(route + "/home", middleware.checkToken, authController.home);
+  //for client dashboard
+  app.get(route + "/client/dashboard", middleware.checkToken, authController.clientDashboard);
 }
   
 start();

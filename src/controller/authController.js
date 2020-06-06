@@ -4,6 +4,7 @@ const secret = process.env.SECRET_KEY;
 
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
+var moment = require("moment");
 
 const admin = require("firebase-admin");
 require("firebase/firestore");
@@ -35,6 +36,9 @@ const login = (req, res) => {
           let hashedPassword = doc.data().password;
           if(bcrypt.compareSync(password, hashedPassword)) {
             // Passwords match
+            //update recent login
+            let updateStatus = userRef.update({recent_login: admin.firestore.Timestamp.now()});
+            //set jwt token
             let token = jwt.sign({ email: email }, secret, {
               expiresIn: "24h"
             });
@@ -268,18 +272,45 @@ const verifyEmail = (req, res) => {
   })
 }
 
-//for home
-const home = (req, res) => {
-  res.set({
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*"
-  });
-  res.send('{ "msg":"valid token. access to resources granted"}');
+//for client dashboard
+const clientDashboard = (req, res) => {
+  let email = req.body.email;
+  let userRef = db.collection("users").doc(email);
+  let getDoc = userRef.get()
+  .then(doc => {
+    if(doc.exists){
+    //user exists
+      res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      });
+      res.json({
+        name: doc.data().name,
+        member_since: moment(
+          doc.data().account_created_at.seconds * 1000
+        ).format("YYYY-MM-DD")
+      });
+    }else{
+      //user doesnot exist
+      res.set({
+       "Content-Type": "application/json",
+       "Access-Control-Allow-Origin": "*"
+      });
+      res.sendStatus(404);
+    }
+  }).catch(err => {
+    //error getting user
+    res.set({
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    });
+    res.sendStatus(500);
+  })
 }
 
 module.exports = {
   login: login,
   signup: signup,
   verifyEmail: verifyEmail,
-  home: home
+  clientDashboard: clientDashboard
 };
