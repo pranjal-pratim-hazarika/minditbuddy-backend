@@ -6,15 +6,24 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
 var moment = require("moment");
 
-const admin = require("firebase-admin");
-require("firebase/firestore");
-const serviceAccount = require("../config/firestore-service-account.json");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://calm-db.firebaseio.com"
-});
+const { admin } = require('../config/firebaseConfig.js');
 const db = admin.firestore();
+
+//------------------NODEMAILER---------------------//
+const nodemailer = require('nodemailer');
+const fs = require('fs');
+const path = require('path');
+const handlebars = require('handlebars');
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST,
+  port: process.env.EMAIL_PORT,
+  secure: process.env.EMAIL_SECURE,
+  auth: {
+    user: process.env.EMAIL_USERNAME,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+});
+//-------------------------------------------------//
 
 //------------------CONTROLLERS------------------//
 
@@ -37,7 +46,7 @@ const login = (req, res) => {
           if(bcrypt.compareSync(password, hashedPassword)) {
             // Passwords match
             //update recent login
-            let updateStatus = userRef.update({recent_login: admin.firestore.Timestamp.now()});
+            let updateLoginTime = userRef.update({recent_login: admin.firestore.Timestamp.now()});
             //set jwt token
             let token = jwt.sign({ email: email }, secret, {
               expiresIn: "24h"
@@ -153,35 +162,24 @@ const signup = (req, res) => {
         }
 
         //Sending email with OTP
-        //--------------------Nodemailer--------------------------//
-        "use strict";
-        const nodemailer = require("nodemailer");
-        // async..await is not allowed in global scope, must use a wrapper
-        async function main() {
-          // Generate test SMTP service account from ethereal.email
-
-          // create reusable transporter object using the default SMTP transport
-          let transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 587,
-            secure: false, // true for 465, false for other ports
-            auth: {
-              user: 'collegeadmissionsystem@gmail.com', // generated ethereal user
-              pass: 'cas2019XXX', // generated ethereal password
-            },
-          });
-
-          // send mail with defined transport object
-          let info = await transporter.sendMail({
-            from: '"Calm Support" <collegeadmissionsystem@gmail.com>', // sender address
-            to: email, // list of receivers
-            subject: "Email Verification - Calm", // Subject line
-            text: "Your OTP is: "+ randOTP, // plain text body
-            html: "<b>Click the link below to verify your email for Calm</b><br>http://localhost:3000/api/v1/verify?email="+email+"&otp="+randOTP, // html body
-          });
-        }
-
-        main().catch(console.error);
+        //-----------------------------------------------------------------//
+        let html = fs.readFileSync(path.join(__dirname, '/email_templates/welcome.html'), 'utf8');
+        let template = handlebars.compile(html);
+        let replacements = {
+          name: name,
+		      otp: randOTP
+        };
+        let htmlToSend = template(replacements);
+	      let info = transporter.sendMail({
+            from: {
+              name: process.env.EMAIL_NAME,
+              address: process.env.EMAIL_USERNAME
+            }, // sender address
+            to: email, // receiver address
+            subject: "Email Verification", // Subject line
+            text: 'Welcome '+name+', your OTP is:'+randOTP, //teodyxt b
+            html: htmlToSend, // html body
+        });
         //-----------------------------------------------------------------//
 
         //inserting data into firestore
@@ -219,8 +217,8 @@ const signup = (req, res) => {
 
 //for email verification
 const verifyEmail = (req, res) => {
-  let email = req.query.email;
-  let otp = req.query.otp;
+  let email = req.body.email;
+  let otp = req.body.otp;
   let userRef = db.collection("users").doc(email);
   let getDoc = userRef.get()
   .then(doc => {
@@ -229,13 +227,11 @@ const verifyEmail = (req, res) => {
       if(doc.data().otp == otp){
         //otp verified
 
-        //Get the `FieldValue` object
-        let FieldValue = admin.firestore.FieldValue;
-
-        //delete the otp from database
-        let removeOTP = userRef.update({
-          otp: FieldValue.delete()
+        //remove otp
+        let updateOTP = userRef.update({
+          otp: ''
         });
+        //update status
         let updateStatus = userRef.update({
           status: 'active'
         });
@@ -272,8 +268,225 @@ const verifyEmail = (req, res) => {
   })
 }
 
-//for client dashboard
-const clientDashboard = (req, res) => {
+
+//for reset password
+const resetPassword = (req, res) => {
+  let email = req.body.email;
+  let password = req.body.password;
+  let otp = req.body.otp;
+
+  if (email) {
+    let userRef = db.collection("users").doc(email);
+    let getDoc = userRef.get()
+    .then(doc => {
+      if(doc.exists){
+        //user exists
+
+        //check user status
+        if(doc.data().status == 'active'){
+          //if otp provided compare otp
+          if(otp){
+            if(doc.data().otp == otp){
+              //if otp matched, update password
+              let saltRounds = 10;
+              let hashedPassword = bcrypt.hashSync(password, saltRounds);
+              
+              let updatePassword = userRef.update({
+                password: hashedPassword
+              });
+              //remove otp
+              let updateOTP = userRef.update({
+                otp: ''
+              });
+
+              //update account update time
+              let updateAccountUpdateTime = userRef.update({account_updated_at: admin.firestore.Timestamp.now()});
+
+              res.set({
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*"
+              });
+              res.sendStatus(200);
+            }
+            else{
+              //otp didnot match
+              res.set({
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*"
+              });
+              res.sendStatus(401);
+            }
+          }
+          else{
+            //send otp in email
+            //-----------------------------------------------------------------//
+            let name = doc.data().name;
+            //generate otp
+            let randOTP = Math.random().toString(36).slice(2);
+            //update otp
+            let updateOTP = userRef.update({
+              otp: randOTP
+            });
+
+            let html = fs.readFileSync(path.join(__dirname, '/email_templates/passwordReset.html'), 'utf8');
+            
+            let template = handlebars.compile(html);
+            let replacements = {
+              name: name,
+		          otp: randOTP
+            };
+            let htmlToSend = template(replacements);
+	          let info = transporter.sendMail({
+              from: {
+                name: process.env.EMAIL_NAME,
+                address: process.env.EMAIL_USERNAME
+              }, // sender address
+              to: email, // receiver address
+              subject: "Password Reset", // Subject line
+              text: 'Hello '+name+', your OTP is:'+randOTP, //teodyxt b
+              html: htmlToSend, // html body
+            });
+            //-----------------------------------------------------------------//
+            res.set({
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*"
+            });
+            res.sendStatus(200);
+          }
+        }
+        else{
+          res.set({
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+           });
+           res.json({
+             status: "not_active",
+             message: "account is not active"
+           });
+        }
+      }else{
+        //user doesnot exist
+        res.set({
+         "Content-Type": "application/json",
+         "Access-Control-Allow-Origin": "*"
+        });
+        res.sendStatus(404);
+      }
+    }).catch(err => {
+      //error getting user
+      res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      });
+      res.sendStatus(500);
+    })
+  } else {
+    //email not provided
+    res.set({
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    });
+    res.sendStatus(400);
+  }
+}
+
+//for closing account
+const closeAccount = (req, res) => {
+  let email = req.body.email;
+
+  if (email) {
+    let userRef = db.collection("users").doc(email);
+    let getDoc = userRef.get()
+    .then(doc => {
+      //update status
+      let updateStatus = userRef.update({
+        status: 'deleted'
+      });
+
+      //update account update time
+      let updateAccountUpdateTime = userRef.update({account_updated_at: admin.firestore.Timestamp.now()});
+
+      res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      });
+      res.sendStatus(200);
+
+    }).catch(err => {
+      //error getting user
+      res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      });
+      res.sendStatus(500);
+    })
+  } else {
+    //email not provided
+    res.set({
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    });
+    res.sendStatus(400);
+  }
+}
+
+//for change password
+const changePassword = (req, res) => {
+  let email = req.body.email;
+  let oldPassword = req.body.oldPassword;
+  let newPassword = req.body.newPassword;
+
+  if (email && oldPassword && newPassword) {
+    let userRef = db.collection("users").doc(email);
+    let getDoc = userRef.get()
+    .then(doc => {
+          let hashedPassword = doc.data().password;
+          if(bcrypt.compareSync(oldPassword, hashedPassword)) {
+            //old Passwords match
+            //update new password
+            let saltRounds = 10;
+            let newHashedPassword = bcrypt.hashSync(newPassword, saltRounds);
+              
+            let updatePassword = userRef.update({
+              password: newHashedPassword
+            });
+
+            //update account update time
+            let updateAccountUpdateTime = userRef.update({account_updated_at: admin.firestore.Timestamp.now()});
+            
+            res.set({
+             "Content-Type": "application/json",
+             "Access-Control-Allow-Origin": "*"
+            });
+            res.sendStatus(200);
+          } else {
+            // Old Passwords don't match
+            res.set({
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*"
+            });
+            res.sendStatus(401);
+          }            
+    }).catch(err => {
+      //error getting user
+      res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      });
+      res.sendStatus(500);
+    })
+  } else {
+    //email new password & old password not provided
+    res.set({
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    });
+    res.sendStatus(400);
+  }
+}
+
+//for dashboard
+const dashboard = (req, res) => {
   let email = req.query.email;
   let userRef = db.collection("users").doc(email);
   let getDoc = userRef.get()
@@ -284,12 +497,73 @@ const clientDashboard = (req, res) => {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*"
       });
-      res.json({
-        name: doc.data().name,
-        member_since: moment(
-          doc.data().account_created_at.seconds * 1000
-        ).format("YYYY-MM-DD")
+      if(doc.data().user_type == 'client'){
+        res.json({
+          name: doc.data().name,
+          member_since: moment(
+            doc.data().account_created_at.seconds * 1000
+          ).format("YYYY-MM-DD")
+        });
+      }
+      else if(doc.data().user_type == 'professional'){
+        res.json({
+          name: doc.data().name,
+          member_since: moment(
+            doc.data().account_created_at.seconds * 1000
+          ).format("YYYY-MM-DD"),
+          occupation: doc.data().occupation,
+          purpose: doc.data().purpose,
+          qualification: doc.data().qualification
+        });
+      }
+    }else{
+      //user doesnot exist
+      res.set({
+       "Content-Type": "application/json",
+       "Access-Control-Allow-Origin": "*"
       });
+      res.sendStatus(404);
+    }
+  }).catch(err => {
+    //error getting user
+    res.set({
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    });
+    res.sendStatus(500);
+  })
+}
+
+//for update profile
+const updateProfile = (req, res) => {
+  let email = req.body.email;
+  let userRef = db.collection("users").doc(email);
+  let getDoc = userRef.get()
+  .then(doc => {
+    if(doc.exists){
+    //user exists
+      if(doc.data().user_type == 'client'){
+        let updateProfile = userRef.update({
+          name: req.body.name
+        });
+        //update account update time
+        let updateAccountUpdateTime = userRef.update({account_updated_at: admin.firestore.Timestamp.now()});
+      }
+      else if(doc.data().user_type == 'professional'){
+        let updateProfile = userRef.update({
+          name: req.body.name,
+          occupation: req.body.occupation,
+          purpose: req.body.purpose,
+          qualification: req.body.qualification
+        });
+        //update account update time
+        let updateAccountUpdateTime = userRef.update({account_updated_at: admin.firestore.Timestamp.now()});
+      }
+	  res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      });
+      res.sendStatus(200);
     }else{
       //user doesnot exist
       res.set({
@@ -312,5 +586,9 @@ module.exports = {
   login: login,
   signup: signup,
   verifyEmail: verifyEmail,
-  clientDashboard: clientDashboard
+  resetPassword: resetPassword,
+  closeAccount: closeAccount,
+  changePassword: changePassword,
+  dashboard: dashboard,
+  updateProfile: updateProfile
 };

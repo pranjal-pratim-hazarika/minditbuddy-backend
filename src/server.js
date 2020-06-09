@@ -9,6 +9,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const cors = require('cors');
 
+//import middleware and controllers
 const middleware = require("./middleware/middleware.js");
 const authController = require("./controller/authController.js");
 
@@ -32,10 +33,18 @@ function start() {
   //for signup
   app.post(route + "/signup", authController.signup);
   //for email verification
-  app.get(route + "/verify", authController.verifyEmail);
-  //for client dashboard
-  app.get(route + "/client/dashboard", middleware.checkToken, authController.clientDashboard);
+  app.post(route + "/verify", authController.verifyEmail);
+  //for reset password
+  app.post(route + "/resetPassword", authController.resetPassword);
+  //for closing account
+  app.post(route + "/closeAccount", middleware.checkToken, authController.closeAccount);
+  //for change password
+  app.post(route + "/changePassword", middleware.checkToken, authController.changePassword);
+  //for dashboard
+  app.get(route + "/dashboard", middleware.checkToken, authController.dashboard);
+  //for update profile
+  app.post(route + "/updateProfile", middleware.checkToken, authController.updateProfile);
 }
-  
+
 start();
   
