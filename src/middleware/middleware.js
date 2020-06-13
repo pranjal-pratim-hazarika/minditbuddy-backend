@@ -2,6 +2,8 @@ require("dotenv").config({ path: "../config/.env" });
 
 const secret = process.env.SECRET_KEY;
 
+const { admin } = require('../config/firebaseConfig.js');
+const db = admin.firestore();
 const jwt = require("jsonwebtoken");
 
 const checkToken = (req, res, next) => {
@@ -38,6 +40,94 @@ const checkToken = (req, res, next) => {
   }
 };
 
+const verifyStaff = (req, res, next) => {
+  let email = req.body.email;
+  if(email){
+    let userRef = db.collection("users").doc(email);
+    let getDoc = userRef.get()
+    .then(doc => {
+      if(doc.exists){
+        if(doc.data().user_type == 'staff'){
+          next();
+        }else {
+          //not staff
+          res.set({
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+          });
+          res.sendStatus(401);
+        }
+      }else{
+        //user doesnot exist
+        res.set({
+         "Content-Type": "application/json",
+         "Access-Control-Allow-Origin": "*"
+        });
+        res.sendStatus(404);
+      }
+    }).catch(err => {
+      //error getting user
+      res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      });
+      res.sendStatus(500);
+    })
+  }else {
+    //email not provided
+    res.set({
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    });
+    res.sendStatus(400);
+  }
+};
+
+const verifyAdmin = (req, res, next) => {
+  let email = req.body.email;
+  if(email){
+    let userRef = db.collection("users").doc(email);
+    let getDoc = userRef.get()
+    .then(doc => {
+      if(doc.exists){
+        if(doc.data().admin == 'true'){
+          next();
+        }else {
+          //not admin
+          res.set({
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+          });
+          res.sendStatus(401);
+        }
+      }else{
+        //user doesnot exist
+        res.set({
+         "Content-Type": "application/json",
+         "Access-Control-Allow-Origin": "*"
+        });
+        res.sendStatus(404);
+      }
+    }).catch(err => {
+      //error getting user
+      res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      });
+      res.sendStatus(500);
+    })
+  }else {
+    //email not provided
+    res.set({
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    });
+    res.sendStatus(400);
+  }
+};
+
 module.exports = {
-  checkToken: checkToken
+  checkToken: checkToken,
+  verifyStaff: verifyStaff,
+  verifyAdmin: verifyAdmin
 };

@@ -59,7 +59,8 @@ const login = (req, res) => {
             res.json({
               success: true,
               message: "Authentication Successful",
-              token: token
+              token: token,
+              user_type: doc.data().user_type
             });
           } else {
             // Passwords don't match
@@ -502,7 +503,7 @@ const dashboard = (req, res) => {
           name: doc.data().name,
           member_since: moment(
             doc.data().account_created_at.seconds * 1000
-          ).format("YYYY-MM-DD")
+          ).format("MMMM Do YYYY")
         });
       }
       else if(doc.data().user_type == 'professional'){
@@ -510,10 +511,19 @@ const dashboard = (req, res) => {
           name: doc.data().name,
           member_since: moment(
             doc.data().account_created_at.seconds * 1000
-          ).format("YYYY-MM-DD"),
+          ).format("MMMM Do YYYY"),
           occupation: doc.data().occupation,
           purpose: doc.data().purpose,
           qualification: doc.data().qualification
+        });
+      }
+      else if(doc.data().user_type == 'staff'){
+        res.json({
+          name: doc.data().name,
+          member_since: moment(
+            doc.data().account_created_at.seconds * 1000
+          ).format("MMMM Do YYYY"),
+          admin: doc.data().admin
         });
       }
     }else{
