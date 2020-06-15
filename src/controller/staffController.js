@@ -8,7 +8,6 @@ const addStaff = (req, res) => {
     let name = req.body.name;
     let email = req.body.staffEmail;
     let password = req.body.password;
-    let user_type = req.body.user_type;
     let isAdmin = req.body.admin;
 
     let userRef = db.collection("users").doc(email);
@@ -23,14 +22,14 @@ const addStaff = (req, res) => {
           name: name,
           email: email,
           password: hashedPassword,
-          user_type: user_type,
+          user_type: 'staff',
           admin: isAdmin,
           account_created_at: admin.firestore.Timestamp.now(),
           account_updated_at: '',
           recent_login: '',
+          otp: '',
           status: 'active'
         };
-
         //inserting data into firestore
         let setDoc = userRef.set(data);
         res.set({
@@ -223,11 +222,41 @@ const addNotification = (req, res) => {
   });
 }
 
+//for suspend user
+const suspendUser = (req, res) => {
+  let email = req.body.email;
+
+  let userRef = db.collection("users").doc(email);
+  let getDoc = userRef.get()
+  .then(doc => {
+    //update status
+    let updateStatus = userRef.update({
+      status: 'suspended'
+    });
+    //update account update time
+    let updateAccountUpdateTime = userRef.update({account_updated_at: admin.firestore.Timestamp.now()});
+
+    res.set({
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    });
+    res.sendStatus(200);
+  }).catch(err => {
+    //error getting user
+    res.set({
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    });
+    res.sendStatus(500);
+  })
+}
+
 module.exports = {
     addStaff: addStaff,
     suspendStaff: suspendStaff,
     viewStaff: viewStaff,
     searchUser: searchUser,
     viewFeedback: viewFeedback,
-    addNotification: addNotification
+    addNotification: addNotification,
+    suspendUser: suspendUser
 };

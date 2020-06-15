@@ -59,7 +59,9 @@ function start() {
   app.get(route + "/viewFeedback", middleware.checkToken, staffController.viewFeedback);
   //for add notification
   app.post(route + "/addNotification", middleware.checkToken, staffController.addNotification);
-  
+  //for suspend user
+  app.post(route + "/suspendUser", middleware.checkToken, staffController.suspendUser);
+
   //for add feedback
   app.post(route + "/addFeedback", middleware.checkToken, userController.addFeedback);
   //for view notification
