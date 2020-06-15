@@ -4,10 +4,13 @@ const secret = process.env.SECRET_KEY;
 
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
-var moment = require("moment");
+const moment = require("moment");
 
 const { admin } = require('../config/firebaseConfig.js');
 const db = admin.firestore();
+
+const clientRef = db.collection("statistics").doc("client");
+const professionalRef = db.collection("statistics").doc("professional");
 
 //------------------NODEMAILER---------------------//
 const nodemailer = require('nodemailer');
@@ -185,6 +188,27 @@ const signup = (req, res) => {
 
         //inserting data into firestore
         let setDoc = userRef.set(data);
+
+        //update statistics
+        if(user_type == 'client'){
+          let getDoc = clientRef.get()
+          .then(doc => {
+            let newPending = eval(doc.data().pending + 1);
+            let updateStatistics = clientRef.update({
+              pending: newPending
+            });
+          })
+        }
+        else if(user_type == 'professional'){
+          let getDoc = professionalRef.get()
+          .then(doc => {
+            let newPending = eval(doc.data().pending + 1);
+            let updateStatistics = professionalRef.update({
+              pending: newPending
+            });
+          })
+        }
+        
         res.set({
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*"
@@ -236,6 +260,31 @@ const verifyEmail = (req, res) => {
         let updateStatus = userRef.update({
           status: 'active'
         });
+
+        //update statistics
+        if(doc.data().user_type == 'client'){
+          let getDoc = clientRef.get()
+          .then(doc => {
+            let newActive = eval(doc.data().active + 1);
+            let newPending = eval(doc.data().pending - 1);
+            let updateStatistics = clientRef.update({
+              active: newActive,
+              pending: newPending
+            });
+          })
+        }
+        else if(doc.data().user_type == 'professional'){
+          let getDoc = professionalRef.get()
+          .then(doc => {
+            let newActive = eval(doc.data().active + 1);
+            let newPending = eval(doc.data().pending - 1);
+            let updateStatistics = professionalRef.update({
+              active: newActive,
+              pending: newPending
+            });
+          })
+        }
+
         res.set({
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*"
@@ -406,6 +455,30 @@ const closeAccount = (req, res) => {
 
       //update account update time
       let updateAccountUpdateTime = userRef.update({account_updated_at: admin.firestore.Timestamp.now()});
+
+      //update statistics
+      if(doc.data().user_type == 'client'){
+        let getDoc = clientRef.get()
+        .then(doc => {
+          let newActive = eval(doc.data().active - 1);
+          let newDeleted = eval(doc.data().deleted + 1);
+          let updateStatistics = clientRef.update({
+            active: newActive,
+            deleted: newDeleted
+          });
+        })
+      }
+      else if(doc.data().user_type == 'professional'){
+        let getDoc = professionalRef.get()
+        .then(doc => {
+          let newActive = eval(doc.data().active - 1);
+          let newDeleted = eval(doc.data().deleted + 1);
+          let updateStatistics = professionalRef.update({
+            active: newActive,
+            deleted: newDeleted
+          });
+        })
+      }
 
       res.set({
         "Content-Type": "application/json",

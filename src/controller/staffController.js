@@ -1,7 +1,10 @@
 const { admin } = require('../config/firebaseConfig.js');
 const db = admin.firestore();
 const bcrypt = require('bcrypt');
-var moment = require("moment");
+const moment = require("moment");
+
+const clientRef = db.collection("statistics").doc("client");
+const professionalRef = db.collection("statistics").doc("professional");
 
 //for add staff
 const addStaff = (req, res) => {
@@ -236,6 +239,30 @@ const suspendUser = (req, res) => {
     //update account update time
     let updateAccountUpdateTime = userRef.update({account_updated_at: admin.firestore.Timestamp.now()});
 
+    //update statistics
+    if(doc.data().user_type == 'client'){
+      let getDoc = clientRef.get()
+      .then(doc => {
+        let newActive = eval(doc.data().active - 1);
+        let newSuspended = eval(doc.data().suspended + 1);
+        let updateStatistics = clientRef.update({
+          active: newActive,
+          suspended: newSuspended
+        });
+      })
+    }
+    else if(doc.data().user_type == 'professional'){
+      let getDoc = professionalRef.get()
+      .then(doc => {
+        let newActive = eval(doc.data().active - 1);
+        let newSuspended = eval(doc.data().suspended + 1);
+        let updateStatistics = professionalRef.update({
+          active: newActive,
+          suspended: newSuspended
+        });
+      })
+    }
+  
     res.set({
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*"
@@ -251,6 +278,34 @@ const suspendUser = (req, res) => {
   })
 }
 
+//for user statistics
+const statistics = (req, res) => {
+  let data = [];
+  let statisticsRef = db.collection('statistics');
+  let allStatistics = statisticsRef.get()
+  .then(snapshot => {
+    snapshot.forEach(doc => {
+      let tempData = {
+        user_type: doc.id,
+        data: doc.data()
+      }
+      data.push(tempData);
+    });
+    res.set({
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    });
+    res.json(data);
+  })
+  .catch(err => {
+    res.set({
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    });
+    res.sendStatus(500);
+  });
+}
+
 module.exports = {
     addStaff: addStaff,
     suspendStaff: suspendStaff,
@@ -258,5 +313,6 @@ module.exports = {
     searchUser: searchUser,
     viewFeedback: viewFeedback,
     addNotification: addNotification,
-    suspendUser: suspendUser
+    suspendUser: suspendUser,
+    statistics: statistics
 };

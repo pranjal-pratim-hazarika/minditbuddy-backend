@@ -61,13 +61,13 @@ function start() {
   app.post(route + "/addNotification", middleware.checkToken, staffController.addNotification);
   //for suspend user
   app.post(route + "/suspendUser", middleware.checkToken, staffController.suspendUser);
+  //for user statistics
+  app.get(route + "/statistics", middleware.checkToken, staffController.statistics);
 
   //for add feedback
   app.post(route + "/addFeedback", middleware.checkToken, userController.addFeedback);
   //for view notification
   app.get(route + "/viewNotification", middleware.checkToken, userController.viewNotification);
-
-  
 }
 
 start();

@@ -1,6 +1,6 @@
 const { admin } = require('../config/firebaseConfig.js');
 const db = admin.firestore();
-var moment = require("moment");
+const moment = require("moment");
 
 //for add feedback
 const addFeedback = (req, res) => {
