@@ -40,6 +40,10 @@ let rooms = {}
   
   //-------------ROUTES------------------//
 
+  //test
+  app.get("/", (req, res) => {
+	  res.send('Mind It Buddy - Prioritizing Mental Health');
+  });
   //for login
   app.post(route + "/login", authController.login);
   //for signup
