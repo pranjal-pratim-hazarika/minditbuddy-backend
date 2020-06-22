@@ -40,10 +40,6 @@ let rooms = {}
   
   //-------------ROUTES------------------//
 
-  //root test
-  app.get("/", req, res) => {
-	  res.send('Mind It Buddy !!!');
-  });
   //for login
   app.post(route + "/login", authController.login);
   //for signup
