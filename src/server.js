@@ -42,6 +42,16 @@ let rooms = {}
   //-------------ROUTES------------------//
 
   //for login
+  app.post("/", (req, res) => {
+	  res.set({
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+           });
+           res.json({
+             message: "Hello"
+           });
+  });
+  //for login
   app.post(route + "/login", authController.login);
   //for signup
   app.post(route + "/signup", authController.signup);
