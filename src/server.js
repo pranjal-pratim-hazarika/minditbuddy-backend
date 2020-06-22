@@ -1,6 +1,5 @@
 require("dotenv").config({ path: "./config/.env" });
 
-const ip = process.env.IP;
 const port = process.env.PORT;
 const route = process.env.ROUTE;
 
@@ -35,15 +34,15 @@ let rooms = {}
   app.use(bodyParser.json());
   app.use(cors());
 
-  server.listen(port, ip, function() {
+  server.listen(port, function() {
     console.log("Server running...");
   });
   
   //-------------ROUTES------------------//
 
-  //for login
-  app.post("/", (req, res) => {
-	  res.send('Hello');
+  //root test
+  app.get("/", req, res) => {
+	  res.send('Mind It Buddy !!!');
   });
   //for login
   app.post(route + "/login", authController.login);
