@@ -1,0 +1,5 @@
+Create Chat
+http://localhost:3000/createChat?email=pranjalpratimh@gmail.com&name=Pranjal&time=1500200300
+
+Join Chat
+http://localhost:3000/users?name=Kalita

@@ -58,7 +58,27 @@ const viewNotification = (req, res) => {
     });
 }
 
+//for post issue
+const postIssue = (req, res) => {
+    let issue = req.body.issue;
+    let duration = req.body.duration;
+    let haveShared = req.body.haveShared;
+    let addDoc = db.collection('client-issues').add({
+        issue: issue,
+        duration: duration,
+        haveShared: haveShared,
+        time: admin.firestore.Timestamp.now()
+    }).then(ref => {
+        res.set({
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+        });
+        res.sendStatus(201);
+    });
+}
+
 module.exports = {
     addFeedback: addFeedback,
-    viewNotification: viewNotification
+    viewNotification: viewNotification,
+    postIssue: postIssue
 };

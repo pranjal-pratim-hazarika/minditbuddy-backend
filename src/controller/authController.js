@@ -576,7 +576,10 @@ const dashboard = (req, res) => {
           name: doc.data().name,
           member_since: moment(
             doc.data().account_created_at.seconds * 1000
-          ).format("MMMM Do YYYY")
+          ).format("MMMM Do YYYY"),
+          last_update: moment(
+            doc.data().account_updated_at.seconds * 1000
+          ).format("MMMM Do YYYY, h:mm a")
         });
       }
       else if(doc.data().user_type == 'professional'){
@@ -585,6 +588,9 @@ const dashboard = (req, res) => {
           member_since: moment(
             doc.data().account_created_at.seconds * 1000
           ).format("MMMM Do YYYY"),
+          last_update: moment(
+            doc.data().account_updated_at.seconds * 1000
+          ).format("MMMM Do YYYY, h:mm a"),
           occupation: doc.data().occupation,
           purpose: doc.data().purpose,
           qualification: doc.data().qualification
@@ -596,6 +602,9 @@ const dashboard = (req, res) => {
           member_since: moment(
             doc.data().account_created_at.seconds * 1000
           ).format("MMMM Do YYYY"),
+          last_update: moment(
+            doc.data().account_updated_at.seconds * 1000
+          ).format("MMMM Do YYYY, h:mm a"),
           admin: doc.data().admin
         });
       }

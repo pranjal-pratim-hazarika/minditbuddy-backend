@@ -8,6 +8,10 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const cors = require('cors');
+//------------Chat-Socket.io-------------------//
+const server = require('http').Server(app)
+const io = require('socket.io')(server)
+//------------Chat-Socket.io-------------------//
 
 //import middleware and controllers
 const middleware = require("./middleware/middleware.js");
@@ -16,15 +20,22 @@ const staffController = require("./controller/staffController.js");
 const userController = require("./controller/userController.js");
 
 function start() {
-  app.use(
+  //------------Chat-Socket.io-------------------//
+  app.set('views', './views')
+app.set('view engine', 'ejs')
+app.use(express.static('public'))
+app.use(express.urlencoded({ extended: true }))
+let rooms = {}
+  //------------Chat-Socket.io-------------------//
+  /* app.use(
     bodyParser.urlencoded({
       extended: false
     })
-  );
+  ); */
   app.use(bodyParser.json());
   app.use(cors());
 
-  app.listen(port, ip, function() {
+  server.listen(port, ip, function() {
     console.log("Server running...");
   });
   
@@ -68,6 +79,64 @@ function start() {
   app.post(route + "/addFeedback", middleware.checkToken, userController.addFeedback);
   //for view notification
   app.get(route + "/viewNotification", middleware.checkToken, userController.viewNotification);
+  //for post issue
+  app.post(route + "/postIssue", middleware.checkToken, userController.postIssue);
+
+
+  //------------Chat-Socket.io-------------------//
+  
+
+  app.get('/users', (req, res) => {
+    res.render('users', { roomList: rooms, name: req.query.name })
+  })
+
+  app.get('/createChat', (req, res) => {
+    let email = req.query.email;
+    let time = req.query.time;
+    let name = req.query.name;
+    let roomName = email+'_'+time;
+    if (rooms[roomName] != null) {
+      return res.redirect('/')
+    }
+    rooms[roomName] = { users: {}, client: name, count: 0 }
+    res.redirect('/joinChat?room='+roomName+'&name='+name)
+    // Send message that new room was created
+    io.emit('room-created', roomName, name)
+  })
+
+  app.get('/joinChat', (req, res) => {
+    if (rooms[req.query.room] == null) {
+      return res.redirect('/')
+    }
+    res.render('room', { roomName: req.query.room , name: req.query.name})
+  })
+
+  io.on('connection', socket => {
+    socket.on('new-user', (room, name) => {
+      socket.join(room)
+      rooms[room].users[socket.id] = name
+      rooms[room].count = rooms[room].count + 1
+      console.log(rooms);
+      socket.to(room).broadcast.emit('user-connected', name)
+    })
+    socket.on('send-chat-message', (room, message) => {
+      socket.to(room).broadcast.emit('chat-message', { message: message, name: rooms[room].users[socket.id] })
+    })
+    socket.on('disconnect', () => {
+      getUserRooms(socket).forEach(room => {
+        socket.to(room).broadcast.emit('user-disconnected', rooms[room].users[socket.id])
+        delete rooms[room].users[socket.id]
+      })
+    })
+  })
+
+  function getUserRooms(socket) {
+    return Object.entries(rooms).reduce((names, [name, room]) => {
+      if (room.users[socket.id] != null) names.push(name)
+      return names
+    }, [])
+  }
+  //------------Chat-Socket.io-------------------//
 }
 
 start();
