@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Chat App</title>
+  <script>
+    const roomName = "<%= roomName %>"
+    const name = "<%= name %>"
+  </script>
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+  <link href="https://fonts.googleapis.com/css?family=Nunito&display=swap"rel="stylesheet"/>
+  <script defer src="/socket.io/socket.io.js"></script>
+  <!-- <script defer src="http://localhost:3000/socket.io/socket.io.js"></script> -->
+  <script defer src="script.js"></script>
+  <style>
+
+    #message-container {
+      width: 80%;
+      max-width: 1200px;
+    }
+
+    #message-container div {
+      /* background-color: #CCC; */
+      background: #bed8ffb0;
+      color: rgb(78, 78, 78);
+      padding: 1em 1.6em;
+      width: 650px;
+      font-family: nunito;
+      margin-top: 0.8em;
+      margin-left: 1em;
+
+      border-top-right-radius: 0.85em;
+      border-bottom-left-radius: 0.85em;
+      border-bottom-right-radius: 0.85em;
+    }
+
+    #message-container div:nth-child(2n) {
+      background-color: #FFF;
+      color: #1b6aab;;
+    }
+
+    #send-container {
+      position: fixed;
+      padding: 2.5em 1em;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: rgba(253, 253, 253, 0.945);
+      width: 98%;
+      display: flex;
+      box-shadow: 0 5px 5px 5px rgba(0,0,0,.2);
+    }
+
+    #message-input {
+      /* flex-grow: 1; */
+      width: 60%;
+      padding: 0.8em 1.2em;
+      border-radius: 1em;
+      background: none;
+      border: 2px solid rgba(70, 122, 165, 0.76);
+      font-size: 1em;
+      margin-left: 15em;
+    }
+    #send-button{
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: none;
+      border: 1px solid steelblue;
+      margin-left: 0.8em;
+      cursor: pointer;
+      color: cornflowerblue;
+    }
+    #clearChat{
+      position: fixed;
+      width: 70px;
+      height: 70px;
+      border: 1px solid grey;
+      border-radius: 50%;
+      top: 0;
+      right: 0;
+      margin-top: 0.5em;
+      margin-right: 0.5em;
+      cursor: pointer;
+    }
+    #chatLogo{
+      font-size: 2em;
+      margin-left: 0.6em;
+      margin-top: 0.6em;
+      color: rgba(169, 169, 169, 0.884);
+      animation: blink 0.5s infinite alternate ease-in-out;
+    }
+    @keyframes blink{
+      to{
+        color: rgba(207, 205, 205, 0.863);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="message-container"></div>
+  
+    <div id="clearChat">
+      <i id="chatLogo" class="far fa-comment-alt"></i>
+    </div>
+
+  <form id="send-container">
+    <input type="text" id="message-input" placeholder="type here...">
+    <button type="submit" id="send-button"><i class="far fa-paper-plane" style="font-size: 1.4em;"></i></button>
+  </form>
+</body>
+</html>

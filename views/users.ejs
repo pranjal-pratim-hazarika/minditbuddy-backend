@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Chat App</title>
+  <script defer src="/socket.io/socket.io.js"></script>
+  <!-- <script defer src="http://localhost:3000/socket.io/socket.io.js"></script> -->
+  <script defer src="script.js"></script>
+
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+  <link href="https://fonts.googleapis.com/css?family=Nunito&display=swap"rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&display=swap" rel="stylesheet">
+
+  <style>
+    #room-container{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 40vh;
+      font-size: 1.8em;
+      color: rgb(150, 150, 150);
+      font-family: roboto;
+    }
+    #chatLink{
+      text-decoration: none;
+      margin-left: 1em;
+      color: mediumseagreen;
+      padding: 0.4em 1em;
+      border: 1px solid rgba(60, 179, 114, 0.753);
+      border-radius: 1em;
+      font-family: nunito;
+    }
+    #displayText{
+      font-size: 0.6em;
+      margin-right: 0.5em;
+      font-family: roboto;
+      margin-top: 0.3em;
+    }
+  </style>
+
+</head>
+<body>
+  <div id="room-container">
+    <span id="displayText"><i class="fas fa-user-circle"></i> Client Name:</span>
+    <% Object.keys(roomList).forEach(room => { %>
+      <% if (roomList[room].count < 2) { %>
+      <div><%= roomList[room].client %></div>
+      <a id="chatLink" href="/joinChat?room=<%= room %>&name=<%=name%>">Join Chat</a>
+      <% } %>
+    <% }) %>
+  </div>
+</body>
+</html>
